@@ -1,0 +1,301 @@
+{
+  "info": {
+    "name": "PayMesh Part 4 \u2014 acceptance evidence",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Synthetic local demonstration. Run 01 once, then 02 for retries. Base URL includes the context path. No AWS credentials belong in this collection. Inspect outbox/database evidence after each step."
+  },
+  "variable": [
+    {
+      "key": "part4BaseUrl",
+      "value": "http://127.0.0.1:18081/api/v1"
+    },
+    {
+      "key": "part4RunKey",
+      "value": ""
+    },
+    {
+      "key": "part4PaymentId",
+      "value": ""
+    },
+    {
+      "key": "part4AcceptedAt",
+      "value": ""
+    },
+    {
+      "key": "part4Receipt",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - New acceptance (creates a new demo key)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{part4RunKey}}"
+          }
+        ],
+        "url": "{{part4BaseUrl}}/payments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amountMinor\": 2500,\n  \"currency\": \"EUR\",\n  \"provider\": \"STRIPE\",\n  \"paymentMethodToken\": \"pm_funded\",\n  \"merchantReference\": \"part4-demo-order\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"part4RunKey\", \"part4-\" + pm.variables.replaceIn(\"{{$guid}}\"));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Accepted\", () => pm.response.to.have.status(202));",
+              "if (pm.response.code === 202) { const r=pm.response.json(); pm.collectionVariables.set(\"part4PaymentId\",r.paymentId); pm.collectionVariables.set(\"part4AcceptedAt\",r.acceptedAt); pm.collectionVariables.set(\"part4Receipt\",JSON.stringify(r)); }",
+              "pm.test(\"First acceptance\", () => pm.expect(pm.response.headers.get(\"Idempotency-Replayed\")).to.eql(\"false\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Identical retry (reuse the same key)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{part4RunKey}}"
+          }
+        ],
+        "url": "{{part4BaseUrl}}/payments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amountMinor\": 2500,\n  \"currency\": \"EUR\",\n  \"provider\": \"STRIPE\",\n  \"paymentMethodToken\": \"pm_funded\",\n  \"merchantReference\": \"part4-demo-order\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Replay accepted\", () => pm.response.to.have.status(202));",
+              "pm.test(\"Original receipt\", () => pm.expect(pm.response.json()).to.deep.eql(JSON.parse(pm.collectionVariables.get(\"part4Receipt\"))));",
+              "pm.test(\"Replay header\", () => pm.expect(pm.response.headers.get(\"Idempotency-Replayed\")).to.eql(\"true\"));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Changed amount with same key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{part4RunKey}}"
+          }
+        ],
+        "url": "{{part4BaseUrl}}/payments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amountMinor\": 2600,\n  \"currency\": \"EUR\",\n  \"provider\": \"STRIPE\",\n  \"paymentMethodToken\": \"pm_funded\",\n  \"merchantReference\": \"part4-demo-order\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Conflict\", () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Read payment status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{part4BaseUrl}}/payments/{{part4PaymentId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status readable\", () => pm.response.to.have.status(200));",
+              "pm.test(\"Same payment\", () => pm.expect(pm.response.json().paymentId).to.eql(pm.collectionVariables.get(\"part4PaymentId\")));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Invalid amount",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{part4RunKey}}"
+          }
+        ],
+        "url": "{{part4BaseUrl}}/payments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amountMinor\": 0,\n  \"currency\": \"EUR\",\n  \"provider\": \"STRIPE\",\n  \"paymentMethodToken\": \"pm_funded\",\n  \"merchantReference\": \"part4-demo-order\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Rejected\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Unknown JSON field",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{part4RunKey}}"
+          }
+        ],
+        "url": "{{part4BaseUrl}}/payments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amountMinor\": 2500,\n  \"currency\": \"EUR\",\n  \"provider\": \"STRIPE\",\n  \"paymentMethodToken\": \"pm_funded\",\n  \"merchantReference\": \"part4-demo-order\",\n  \"unexpectedField\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Rejected\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 - Missing idempotency header",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{part4BaseUrl}}/payments",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amountMinor\": 2500,\n  \"currency\": \"EUR\",\n  \"provider\": \"STRIPE\",\n  \"paymentMethodToken\": \"pm_funded\",\n  \"merchantReference\": \"part4-demo-order\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Rejected\", () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 - Payment not found",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{part4BaseUrl}}/payments/00000000-0000-4000-8000-000000000000"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Not found\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

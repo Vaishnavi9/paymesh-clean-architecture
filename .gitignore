@@ -1,0 +1,16 @@
+**/target/
+**/node_modules/
+**/.maven-repository/
+**/.runtime/
+**/.idea/
+**/__pycache__/
+*.iml
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+**/config/database-local.properties
+*.jks
+*.p12
+*.key

@@ -1,0 +1,8 @@
+**/target/
+/.idea/
+*.iml
+/.env
+/.runtime/
+*.log
+/.maven-repository/
+**/node_modules/

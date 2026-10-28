@@ -1,0 +1,16 @@
+[
+  {"id":"s-authorise","provider":"stripe","lesson":"Authorisation reserves funds; capture has not happened","amountMinor":2500,"currency":"EUR","token":"pm_funded","expectedState":"AUTHORISED"},
+  {"id":"s-capture","provider":"stripe","lesson":"Authorise, then capture once","amountMinor":1250,"currency":"EUR","token":"pm_funded","capture":true,"expectedState":"CAPTURED"},
+  {"id":"s-low","provider":"stripe","lesson":"Insufficient funds is a business decline","amountMinor":2500,"currency":"EUR","token":"pm_low","expectedState":"DECLINED"},
+  {"id":"s-blocked","provider":"stripe","lesson":"A funded but blocked account still declines","amountMinor":2500,"currency":"EUR","token":"pm_blocked","expectedState":"DECLINED"},
+  {"id":"s-currency","provider":"stripe","lesson":"Funding currency must match the payment currency","amountMinor":2500,"currency":"EUR","token":"pm_usd","expectedState":"DECLINED"},
+  {"id":"s-lost","provider":"stripe","lesson":"Commit succeeds, response is lost; reuse the same key","amountMinor":1750,"currency":"EUR","token":"pm_funded","automatic":true,"scenario":{"loseResponse":true},"expectedState":"CAPTURED"},
+  {"id":"a-retry","provider":"adyen","lesson":"Two transient attempts, then authorisation","amountMinor":2500,"currency":"EUR","token":"pm_funded","scenario":{"transientFailures":2},"expectedState":"AUTHORISED","expectedAttempts":3},
+  {"id":"a-capture","provider":"adyen","lesson":"Accepted capture is completed by the background worker","amountMinor":1250,"currency":"EUR","token":"pm_funded","capture":true,"expectedState":"CAPTURED","expectedAttempts":1},
+  {"id":"a-decline","provider":"adyen","lesson":"Async processing can produce a business decline","amountMinor":2500,"currency":"EUR","token":"pm_low","expectedState":"DECLINED","expectedAttempts":1},
+  {"id":"a-review","provider":"adyen","lesson":"Retry budget exhausted; preserve uncertainty for review","amountMinor":2500,"currency":"EUR","token":"pm_funded","scenario":{"transientFailures":10},"expectedState":"REVIEW_REQUIRED","expectedAttempts":5},
+  {"id":"p-created","provider":"paypal","lesson":"An order awaiting buyer approval moves no funds","amountMinor":2500,"currency":"EUR","token":"pm_funded","expectedState":"CREATED"},
+  {"id":"p-approved","provider":"paypal","lesson":"Buyer approval alone does not capture money","amountMinor":2500,"currency":"EUR","token":"pm_funded","approve":true,"expectedState":"APPROVED"},
+  {"id":"p-capture","provider":"paypal","lesson":"Approve, capture, then prove one financial effect","amountMinor":1250,"currency":"EUR","token":"pm_funded","approve":true,"capture":true,"expectedState":"CAPTURED"},
+  {"id":"p-decline","provider":"paypal","lesson":"An approved order can still decline at capture","amountMinor":2500,"currency":"EUR","token":"pm_low","approve":true,"capture":true,"expectedState":"DECLINED"}
+]

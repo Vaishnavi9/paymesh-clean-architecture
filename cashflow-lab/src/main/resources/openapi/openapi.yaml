@@ -1,0 +1,324 @@
+openapi: 3.1.0
+
+info:
+  title: PayMesh Part 4 — Payment Acceptance
+  version: 1.0.0
+  description: |
+    Commit a payment request and its outbox instruction in one database transaction.
+    Retry with the same merchant-scoped key and unchanged fields to retrieve the original receipt.
+    Optional delivery publishes the outbox instruction to AWS SQS.
+    Acceptance and publication do not establish authorisation, capture or settlement.
+    Kafka configuration is retained for later integration; this API does not publish Kafka outcomes.
+    The merchant is configured locally. Authentication is not implemented.
+
+servers:
+  - url: http://127.0.0.1:18081/api/v1
+    description: Local backend with db,acceptance profiles
+
+tags:
+  - name: PaymentSubmission
+    description: Payment acceptance and its linked status resource
+
+paths:
+
+  # Payment acceptance is enabled with the db,acceptance profiles.
+  /payments:
+    post:
+      tags: [PaymentSubmission]
+      operationId: submitPayment
+      summary: Atomically accept a payment and persist its execution command
+      x-implementation-status: implemented-local
+      servers:
+        - url: http://127.0.0.1:18081/api/v1
+          description: Local Part 4 acceptance backend
+      description: |
+        Local acceptance milestone enabled with db,acceptance.
+        The request transaction saves the payment and a pending outbox command.
+        Provider execution and message delivery happen in later processing steps.
+        HTTP 202 confirms that the payment and its outbox command committed together.
+        When delivery is enabled, the background publisher may already have advanced
+        the outbox status by the time the client receives this response.
+        A repeated key with identical business fields returns the original receipt,
+        including for simultaneous requests after the winning transaction commits.
+        JSON property order and insignificant whitespace do not change request identity.
+        Different fields under the same key return 409. Keys are scoped to merchant.
+        The local merchant is configured on the server; authentication is not implemented.
+        Keys are retained indefinitely in this milestone. Keep the same key when recovering
+        from an unconfirmed response. GET retrieves current status separately.
+        Unknown body fields and fractional/string amounts are rejected.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Exactly one header. Generate before the first submission and retain for retries.
+            Reuse only for the identical logical request; this key is not a credential.
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 64
+            pattern: '^[A-Za-z0-9._:-]{1,64}$'
+          example: acceptance-episode-001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentSubmission'
+            example:
+              amountMinor: 2500
+              currency: EUR
+              provider: STRIPE
+              paymentMethodToken: pm_funded
+              merchantReference: order-001
+      responses:
+        '202':
+          description: Payment and command committed, or the original acceptance replayed
+          headers:
+            Location:
+              description: Relative URL of the current payment-status resource
+              schema:
+                type: string
+                format: uri-reference
+            Cache-Control:
+              description: Prevent storage of this payment response in caches
+              schema:
+                type: string
+                const: no-store
+            Idempotency-Replayed:
+              description: Whether this response reuses an existing acceptance
+              schema:
+                type: string
+                enum: ['true', 'false']
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAccepted'
+              example:
+                paymentId: '20000000-0000-4000-8000-000000000001'
+                status: ACCEPTED
+                statusUrl: /api/v1/payments/20000000-0000-4000-8000-000000000001
+                acceptedAt: '2026-10-20T19:00:00Z'
+        '400':
+          description: Invalid body, provider, token, amount or idempotency header
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+        '409':
+          description: Idempotency key was already used with different payment details
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+        '503':
+          description: Storage temporarily unavailable; outcome unconfirmed, recover with the same key
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+        '500':
+          description: Unexpected failure; retain the original key and diagnose using the request ID
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+
+  /payments/{paymentId}:
+    get:
+      tags: [PaymentSubmission]
+      operationId: getAcceptedPayment
+      x-implementation-status: implemented-local
+      summary: Retrieve the current payment status within the configured demo merchant
+      servers:
+        - url: http://127.0.0.1:18081/api/v1
+      description: |
+        Read endpoint for the local payment-creation backend. Status stays ACCEPTED
+        until a future execution worker is connected. Funding tokens and idempotency keys
+        are excluded. This local demo has no authenticated tenant boundary.
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Current accepted payment
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedPaymentStatus'
+        '400':
+          description: Malformed payment ID
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+        '404':
+          description: No payment with that ID in this merchant scope
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+        '503':
+          description: Storage temporarily unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+        '500':
+          description: Unexpected internal failure
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ApiProblem'
+
+components:
+  schemas:
+
+    PaymentSubmission:
+      type: object
+      additionalProperties: false
+      required: [amountMinor, currency, provider, paymentMethodToken, merchantReference]
+      properties:
+        amountMinor:
+          type: integer
+          minimum: 1
+          maximum: 99999999
+          description: Whole minor units; EUR 25.00 is 2500. Bounded below JavaScript's exact-integer limit.
+          example: 2500
+        currency:
+          type: string
+          enum: [EUR, USD]
+        provider:
+          type: string
+          enum: [STRIPE, ADYEN, PAYPAL]
+          description: Intended local simulator only; no connection to a real Stripe, Adyen or PayPal account.
+        paymentMethodToken:
+          type: string
+          enum: [pm_funded, pm_low, pm_blocked, pm_usd]
+          description: Synthetic provider token only; no actual card details.
+        merchantReference:
+          type: string
+          pattern: '^[A-Za-z0-9._:-]{1,80}$'
+          example: episode-payment-001
+
+    PaymentAccepted:
+      type: object
+      additionalProperties: false
+      required: [paymentId, status, statusUrl, acceptedAt]
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: ACCEPTED
+          description: Immutable acceptance receipt; query statusUrl for current state.
+        statusUrl:
+          type: string
+          format: uri-reference
+          description: Relative status endpoint for this payment; matches the Location header.
+          pattern: '^/api/v1/payments/[0-9a-fA-F-]{36}$'
+        acceptedAt:
+          type: string
+          format: date-time
+
+    AcceptedPaymentStatus:
+      type: object
+      additionalProperties: false
+      required: [paymentId, amountMinor, currency, provider, merchantReference, status, createdAt]
+      properties:
+        paymentId:
+          type: string
+          format: uuid
+        amountMinor:
+          type: integer
+          minimum: 1
+          maximum: 99999999
+        currency:
+          type: string
+          enum: [EUR, USD]
+        provider:
+          type: string
+          enum: [STRIPE, ADYEN, PAYPAL]
+        merchantReference:
+          type: string
+        status:
+          type: string
+          const: ACCEPTED
+        createdAt:
+          type: string
+          format: date-time
+
+    ApiProblem:
+      type: object
+      description: |
+        RFC 9457 problem details with application extensions.
+
+        HTTP status must match the status field.
+        Generate requestId on the server and include it in internal logs.
+
+        Never expose SQL, credentials, stack traces, raw exception
+        messages or rejected values.
+
+        instance contains the request path without query parameters.
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+        - code
+        - requestId
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          example: about:blank
+
+        title:
+          type: string
+
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+
+        detail:
+          type: string
+
+        instance:
+          type: string
+          format: uri-reference
+
+        code:
+          type: string
+          description: Stable application code; clients must not parse detail text.
+          examples:
+            - INVALID_REQUEST
+            - IDEMPOTENCY_CONFLICT
+            - PAYMENT_STORAGE_UNAVAILABLE
+            - INTERNAL_ERROR
+
+        requestId:
+          type: string
+          format: uuid
+
+        errors:
+          type: array
+          description: Optional safe field-level validation messages.
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field:
+                type: string
+              message:
+                type: string

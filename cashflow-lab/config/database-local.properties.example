@@ -1,0 +1,4 @@
+# Copy to database-local.properties (ignored by Git), or use DB_USER / DB_PASSWORD.
+# Use the SAME username and password as your existing DBeaver connection.
+app.database.username=
+app.database.password=

@@ -1,0 +1,550 @@
+{
+  "examples": [
+    {
+      "provider": "stripe",
+      "scenario": "s-authorise",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_666e2c17af9744318341931941090277",
+        "X-Simulator-Timestamp": "1792518222",
+        "X-Simulator-Signature": "be7fee1b220bc379b46c0becabac92883a381c0c1e4277ba1bf1fa69e4076c70"
+      },
+      "rawBody": "{\"id\": \"evt_666e2c17af9744318341931941090277\", \"object\": \"event\", \"type\": \"payment_intent.amount_capturable_updated\", \"data\": {\"object\": {\"id\": \"pi_218ca62df7d8430688a006f5be063efd\", \"object\": \"payment_intent\", \"amount\": 2500, \"currency\": \"eur\", \"status\": \"requires_capture\", \"payment_method\": \"pm_funded\", \"capture_method\": \"manual\", \"amount_received\": 0, \"amount_capturable\": 2500, \"metadata\": {\"order_reference\": \"catalog-v1-s-authorise\"}}}}",
+      "payload": {
+        "id": "evt_666e2c17af9744318341931941090277",
+        "object": "event",
+        "type": "payment_intent.amount_capturable_updated",
+        "data": {
+          "object": {
+            "id": "pi_218ca62df7d8430688a006f5be063efd",
+            "object": "payment_intent",
+            "amount": 2500,
+            "currency": "eur",
+            "status": "requires_capture",
+            "payment_method": "pm_funded",
+            "capture_method": "manual",
+            "amount_received": 0,
+            "amount_capturable": 2500,
+            "metadata": {
+              "order_reference": "catalog-v1-s-authorise"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-capture",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_ddc24d8cdb9846e8b4116b17870a64a1",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "f606d2b6491d8343d67b4b8cc23c5779d3032753a1addf9d90c6b27175bc8f27"
+      },
+      "rawBody": "{\"id\": \"evt_ddc24d8cdb9846e8b4116b17870a64a1\", \"object\": \"event\", \"type\": \"payment_intent.amount_capturable_updated\", \"data\": {\"object\": {\"id\": \"pi_7ef0f870641c40f68f9b72592052ebbe\", \"object\": \"payment_intent\", \"amount\": 1250, \"currency\": \"eur\", \"status\": \"requires_capture\", \"payment_method\": \"pm_funded\", \"capture_method\": \"manual\", \"amount_received\": 0, \"amount_capturable\": 1250, \"metadata\": {\"order_reference\": \"catalog-v1-s-capture\"}}}}",
+      "payload": {
+        "id": "evt_ddc24d8cdb9846e8b4116b17870a64a1",
+        "object": "event",
+        "type": "payment_intent.amount_capturable_updated",
+        "data": {
+          "object": {
+            "id": "pi_7ef0f870641c40f68f9b72592052ebbe",
+            "object": "payment_intent",
+            "amount": 1250,
+            "currency": "eur",
+            "status": "requires_capture",
+            "payment_method": "pm_funded",
+            "capture_method": "manual",
+            "amount_received": 0,
+            "amount_capturable": 1250,
+            "metadata": {
+              "order_reference": "catalog-v1-s-capture"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-capture",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_47ce99e0f3004309b6176d4c28903525",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "7afb97fc0cfd8b6cf9448baa19b625cb06b64ea7f406fe6e47477881baac34c8"
+      },
+      "rawBody": "{\"id\": \"evt_47ce99e0f3004309b6176d4c28903525\", \"object\": \"event\", \"type\": \"payment_intent.succeeded\", \"data\": {\"object\": {\"id\": \"pi_7ef0f870641c40f68f9b72592052ebbe\", \"object\": \"payment_intent\", \"amount\": 1250, \"currency\": \"eur\", \"status\": \"succeeded\", \"payment_method\": \"pm_funded\", \"capture_method\": \"manual\", \"amount_received\": 1250, \"amount_capturable\": 0, \"metadata\": {\"order_reference\": \"catalog-v1-s-capture\"}}}}",
+      "payload": {
+        "id": "evt_47ce99e0f3004309b6176d4c28903525",
+        "object": "event",
+        "type": "payment_intent.succeeded",
+        "data": {
+          "object": {
+            "id": "pi_7ef0f870641c40f68f9b72592052ebbe",
+            "object": "payment_intent",
+            "amount": 1250,
+            "currency": "eur",
+            "status": "succeeded",
+            "payment_method": "pm_funded",
+            "capture_method": "manual",
+            "amount_received": 1250,
+            "amount_capturable": 0,
+            "metadata": {
+              "order_reference": "catalog-v1-s-capture"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-low",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_d2d8ab0238eb4cc6bcc5152fb6099854",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "e10a583b9127cf9ece54c01763073eb3bcf06c57687ca7ecffcfbc2cd29c488c"
+      },
+      "rawBody": "{\"id\": \"evt_d2d8ab0238eb4cc6bcc5152fb6099854\", \"object\": \"event\", \"type\": \"payment_intent.payment_failed\", \"data\": {\"object\": {\"id\": \"pi_438341c078d84f32b28724d6d74fac32\", \"object\": \"payment_intent\", \"amount\": 2500, \"currency\": \"eur\", \"status\": \"requires_payment_method\", \"payment_method\": \"pm_low\", \"capture_method\": \"manual\", \"amount_received\": 0, \"amount_capturable\": 0, \"metadata\": {\"order_reference\": \"catalog-v1-s-low\"}, \"last_payment_error\": {\"type\": \"card_error\", \"code\": \"card_declined\", \"decline_code\": \"insufficient_funds\"}}}}",
+      "payload": {
+        "id": "evt_d2d8ab0238eb4cc6bcc5152fb6099854",
+        "object": "event",
+        "type": "payment_intent.payment_failed",
+        "data": {
+          "object": {
+            "id": "pi_438341c078d84f32b28724d6d74fac32",
+            "object": "payment_intent",
+            "amount": 2500,
+            "currency": "eur",
+            "status": "requires_payment_method",
+            "payment_method": "pm_low",
+            "capture_method": "manual",
+            "amount_received": 0,
+            "amount_capturable": 0,
+            "metadata": {
+              "order_reference": "catalog-v1-s-low"
+            },
+            "last_payment_error": {
+              "type": "card_error",
+              "code": "card_declined",
+              "decline_code": "insufficient_funds"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-blocked",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_dd6d781e91df4197a5dd9a760b286062",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "a9e90f841206c2f0543cef9d3b83bcce0b7b9d43eeab731f0e7054e6c24dca40"
+      },
+      "rawBody": "{\"id\": \"evt_dd6d781e91df4197a5dd9a760b286062\", \"object\": \"event\", \"type\": \"payment_intent.payment_failed\", \"data\": {\"object\": {\"id\": \"pi_d742614cbc5747eaa73253c05c7f76c7\", \"object\": \"payment_intent\", \"amount\": 2500, \"currency\": \"eur\", \"status\": \"requires_payment_method\", \"payment_method\": \"pm_blocked\", \"capture_method\": \"manual\", \"amount_received\": 0, \"amount_capturable\": 0, \"metadata\": {\"order_reference\": \"catalog-v1-s-blocked\"}, \"last_payment_error\": {\"type\": \"card_error\", \"code\": \"card_declined\", \"decline_code\": \"account_blocked\"}}}}",
+      "payload": {
+        "id": "evt_dd6d781e91df4197a5dd9a760b286062",
+        "object": "event",
+        "type": "payment_intent.payment_failed",
+        "data": {
+          "object": {
+            "id": "pi_d742614cbc5747eaa73253c05c7f76c7",
+            "object": "payment_intent",
+            "amount": 2500,
+            "currency": "eur",
+            "status": "requires_payment_method",
+            "payment_method": "pm_blocked",
+            "capture_method": "manual",
+            "amount_received": 0,
+            "amount_capturable": 0,
+            "metadata": {
+              "order_reference": "catalog-v1-s-blocked"
+            },
+            "last_payment_error": {
+              "type": "card_error",
+              "code": "card_declined",
+              "decline_code": "account_blocked"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-currency",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_fd88dfb4abd34a3b83582119d574c7aa",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "6ddb16fbbf3f23d3bef5fd5ec495081544aa9e2309d45e55fefbb8357f142097"
+      },
+      "rawBody": "{\"id\": \"evt_fd88dfb4abd34a3b83582119d574c7aa\", \"object\": \"event\", \"type\": \"payment_intent.payment_failed\", \"data\": {\"object\": {\"id\": \"pi_bafc58fc455b4c95b436c96b08de512e\", \"object\": \"payment_intent\", \"amount\": 2500, \"currency\": \"eur\", \"status\": \"requires_payment_method\", \"payment_method\": \"pm_usd\", \"capture_method\": \"manual\", \"amount_received\": 0, \"amount_capturable\": 0, \"metadata\": {\"order_reference\": \"catalog-v1-s-currency\"}, \"last_payment_error\": {\"type\": \"card_error\", \"code\": \"card_declined\", \"decline_code\": \"currency_mismatch\"}}}}",
+      "payload": {
+        "id": "evt_fd88dfb4abd34a3b83582119d574c7aa",
+        "object": "event",
+        "type": "payment_intent.payment_failed",
+        "data": {
+          "object": {
+            "id": "pi_bafc58fc455b4c95b436c96b08de512e",
+            "object": "payment_intent",
+            "amount": 2500,
+            "currency": "eur",
+            "status": "requires_payment_method",
+            "payment_method": "pm_usd",
+            "capture_method": "manual",
+            "amount_received": 0,
+            "amount_capturable": 0,
+            "metadata": {
+              "order_reference": "catalog-v1-s-currency"
+            },
+            "last_payment_error": {
+              "type": "card_error",
+              "code": "card_declined",
+              "decline_code": "currency_mismatch"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-lost",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_98c3f640b7544317966ab72ec93d8042",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "871dfe4293b528ea7aa79b5f23c2df56807e664b348e457b91905a1d24a3ec02"
+      },
+      "rawBody": "{\"id\": \"evt_98c3f640b7544317966ab72ec93d8042\", \"object\": \"event\", \"type\": \"payment_intent.amount_capturable_updated\", \"data\": {\"object\": {\"id\": \"pi_0b377bea0e6945a3896c36ca5430d069\", \"object\": \"payment_intent\", \"amount\": 1750, \"currency\": \"eur\", \"status\": \"requires_capture\", \"payment_method\": \"pm_funded\", \"capture_method\": \"automatic\", \"amount_received\": 0, \"amount_capturable\": 1750, \"metadata\": {\"order_reference\": \"catalog-v1-s-lost\"}}}}",
+      "payload": {
+        "id": "evt_98c3f640b7544317966ab72ec93d8042",
+        "object": "event",
+        "type": "payment_intent.amount_capturable_updated",
+        "data": {
+          "object": {
+            "id": "pi_0b377bea0e6945a3896c36ca5430d069",
+            "object": "payment_intent",
+            "amount": 1750,
+            "currency": "eur",
+            "status": "requires_capture",
+            "payment_method": "pm_funded",
+            "capture_method": "automatic",
+            "amount_received": 0,
+            "amount_capturable": 1750,
+            "metadata": {
+              "order_reference": "catalog-v1-s-lost"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "stripe",
+      "scenario": "s-lost",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_d237d6aac06845b984be93f71b085e00",
+        "X-Simulator-Timestamp": "1792518223",
+        "X-Simulator-Signature": "60e07276e50adabe28fd32b2b5ef5ba9b0d4c3d41a15cad767a9b3ffc0ceda6c"
+      },
+      "rawBody": "{\"id\": \"evt_d237d6aac06845b984be93f71b085e00\", \"object\": \"event\", \"type\": \"payment_intent.succeeded\", \"data\": {\"object\": {\"id\": \"pi_0b377bea0e6945a3896c36ca5430d069\", \"object\": \"payment_intent\", \"amount\": 1750, \"currency\": \"eur\", \"status\": \"succeeded\", \"payment_method\": \"pm_funded\", \"capture_method\": \"automatic\", \"amount_received\": 1750, \"amount_capturable\": 0, \"metadata\": {\"order_reference\": \"catalog-v1-s-lost\"}}}}",
+      "payload": {
+        "id": "evt_d237d6aac06845b984be93f71b085e00",
+        "object": "event",
+        "type": "payment_intent.succeeded",
+        "data": {
+          "object": {
+            "id": "pi_0b377bea0e6945a3896c36ca5430d069",
+            "object": "payment_intent",
+            "amount": 1750,
+            "currency": "eur",
+            "status": "succeeded",
+            "payment_method": "pm_funded",
+            "capture_method": "automatic",
+            "amount_received": 1750,
+            "amount_capturable": 0,
+            "metadata": {
+              "order_reference": "catalog-v1-s-lost"
+            }
+          }
+        }
+      }
+    },
+    {
+      "provider": "adyen",
+      "scenario": "a-retry",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_c84a5710589d494b9faad658d77a7716",
+        "X-Simulator-Timestamp": "1792518227",
+        "X-Simulator-Signature": "8e00016b0174050726beef68fc77bb26ac983c5a3516fa452d43a9a2988b0ab7"
+      },
+      "rawBody": "{\"live\": \"false\", \"notificationItems\": [{\"NotificationRequestItem\": {\"pspReference\": \"psp_4f065791a85c428eb4b220a43f285014\", \"originalReference\": null, \"merchantReference\": \"catalog-v1-a-retry\", \"merchantAccountCode\": \"merchant-demo\", \"eventCode\": \"AUTHORISATION\", \"success\": \"true\", \"eventDate\": \"2026-10-20T17:43:47.064633Z\", \"amount\": {\"value\": 2500, \"currency\": \"EUR\"}}}]}",
+      "payload": {
+        "live": "false",
+        "notificationItems": [
+          {
+            "NotificationRequestItem": {
+              "pspReference": "psp_4f065791a85c428eb4b220a43f285014",
+              "originalReference": null,
+              "merchantReference": "catalog-v1-a-retry",
+              "merchantAccountCode": "merchant-demo",
+              "eventCode": "AUTHORISATION",
+              "success": "true",
+              "eventDate": "2026-10-20T17:43:47.064633Z",
+              "amount": {
+                "value": 2500,
+                "currency": "EUR"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provider": "adyen",
+      "scenario": "a-capture",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_a7aac6227f444857a4ad1b5eedc84eff",
+        "X-Simulator-Timestamp": "1792518227",
+        "X-Simulator-Signature": "430c37ed87d0758dfaf6840912e13fe00e8d09a162d415b4b7a6ba87dd74027b"
+      },
+      "rawBody": "{\"live\": \"false\", \"notificationItems\": [{\"NotificationRequestItem\": {\"pspReference\": \"psp_d1df5ae07427447d9fc8b18a5e2c2f1f\", \"originalReference\": null, \"merchantReference\": \"catalog-v1-a-capture\", \"merchantAccountCode\": \"merchant-demo\", \"eventCode\": \"AUTHORISATION\", \"success\": \"true\", \"eventDate\": \"2026-10-20T17:43:47.570445Z\", \"amount\": {\"value\": 1250, \"currency\": \"EUR\"}}}]}",
+      "payload": {
+        "live": "false",
+        "notificationItems": [
+          {
+            "NotificationRequestItem": {
+              "pspReference": "psp_d1df5ae07427447d9fc8b18a5e2c2f1f",
+              "originalReference": null,
+              "merchantReference": "catalog-v1-a-capture",
+              "merchantAccountCode": "merchant-demo",
+              "eventCode": "AUTHORISATION",
+              "success": "true",
+              "eventDate": "2026-10-20T17:43:47.570445Z",
+              "amount": {
+                "value": 1250,
+                "currency": "EUR"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provider": "adyen",
+      "scenario": "a-capture",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_497be657b3b74aa880113f8b583b6279",
+        "X-Simulator-Timestamp": "1792518228",
+        "X-Simulator-Signature": "5d1a2ca1622937d1caafe4e60f989706082cb353cdb1b8d30762a33a2acaf85c"
+      },
+      "rawBody": "{\"live\": \"false\", \"notificationItems\": [{\"NotificationRequestItem\": {\"pspReference\": \"psp_capture_a6ed0eb2ec804abcbf74ab0670e9fda1\", \"originalReference\": \"psp_d1df5ae07427447d9fc8b18a5e2c2f1f\", \"merchantReference\": \"catalog-v1-a-capture\", \"merchantAccountCode\": \"merchant-demo\", \"eventCode\": \"CAPTURE\", \"success\": \"true\", \"eventDate\": \"2026-10-20T17:43:48.080876Z\", \"amount\": {\"value\": 1250, \"currency\": \"EUR\"}}}]}",
+      "payload": {
+        "live": "false",
+        "notificationItems": [
+          {
+            "NotificationRequestItem": {
+              "pspReference": "psp_capture_a6ed0eb2ec804abcbf74ab0670e9fda1",
+              "originalReference": "psp_d1df5ae07427447d9fc8b18a5e2c2f1f",
+              "merchantReference": "catalog-v1-a-capture",
+              "merchantAccountCode": "merchant-demo",
+              "eventCode": "CAPTURE",
+              "success": "true",
+              "eventDate": "2026-10-20T17:43:48.080876Z",
+              "amount": {
+                "value": 1250,
+                "currency": "EUR"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provider": "adyen",
+      "scenario": "a-decline",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_5fd7f738e09a4685935aae1e386c1a33",
+        "X-Simulator-Timestamp": "1792518228",
+        "X-Simulator-Signature": "af9d354876f90249638e87c698e28c14295468f9631115d7f6c01323e7e5f954"
+      },
+      "rawBody": "{\"live\": \"false\", \"notificationItems\": [{\"NotificationRequestItem\": {\"pspReference\": \"psp_1723a46e4341477abc27f07eb5840c98\", \"originalReference\": null, \"merchantReference\": \"catalog-v1-a-decline\", \"merchantAccountCode\": \"merchant-demo\", \"eventCode\": \"AUTHORISATION\", \"success\": \"false\", \"eventDate\": \"2026-10-20T17:43:48.852397Z\", \"amount\": {\"value\": 2500, \"currency\": \"EUR\"}}}]}",
+      "payload": {
+        "live": "false",
+        "notificationItems": [
+          {
+            "NotificationRequestItem": {
+              "pspReference": "psp_1723a46e4341477abc27f07eb5840c98",
+              "originalReference": null,
+              "merchantReference": "catalog-v1-a-decline",
+              "merchantAccountCode": "merchant-demo",
+              "eventCode": "AUTHORISATION",
+              "success": "false",
+              "eventDate": "2026-10-20T17:43:48.852397Z",
+              "amount": {
+                "value": 2500,
+                "currency": "EUR"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provider": "adyen",
+      "scenario": "a-review",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_e0170d646662444384d953f64d05db6e",
+        "X-Simulator-Timestamp": "1792518247",
+        "X-Simulator-Signature": "bbbc2c9088890bbc0383fce89d7ed1fb09e35f5cb565b7f6d5f3a632312605d2"
+      },
+      "rawBody": "{\"live\": \"false\", \"notificationItems\": [{\"NotificationRequestItem\": {\"pspReference\": \"psp_0c6ea82140d64ba1b1f3421da373e0a4\", \"originalReference\": null, \"merchantReference\": \"catalog-v1-a-review\", \"merchantAccountCode\": \"merchant-demo\", \"eventCode\": \"SIMULATOR_REVIEW_REQUIRED\", \"success\": \"false\", \"eventDate\": \"2026-10-20T17:44:07.303456Z\", \"amount\": {\"value\": 2500, \"currency\": \"EUR\"}}}]}",
+      "payload": {
+        "live": "false",
+        "notificationItems": [
+          {
+            "NotificationRequestItem": {
+              "pspReference": "psp_0c6ea82140d64ba1b1f3421da373e0a4",
+              "originalReference": null,
+              "merchantReference": "catalog-v1-a-review",
+              "merchantAccountCode": "merchant-demo",
+              "eventCode": "SIMULATOR_REVIEW_REQUIRED",
+              "success": "false",
+              "eventDate": "2026-10-20T17:44:07.303456Z",
+              "amount": {
+                "value": 2500,
+                "currency": "EUR"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "provider": "paypal",
+      "scenario": "p-capture",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_3ac08fe69e5347259cebaf419a54cf7d",
+        "X-Simulator-Timestamp": "1792518247",
+        "X-Simulator-Signature": "30bbe3bef9de4c6033c88118bb16094cf7a36bce1dbcadfef31d324c03accaf7"
+      },
+      "rawBody": "{\"id\": \"evt_3ac08fe69e5347259cebaf419a54cf7d\", \"event_type\": \"SIMULATOR.AUTHORISED\", \"resource\": {\"id\": \"order_7b38f1bec2aa4859a50d188ec85ee32e\", \"status\": \"APPROVED\", \"intent\": \"CAPTURE\", \"purchase_units\": [{\"custom_id\": \"catalog-v1-p-capture\", \"amount\": {\"currency_code\": \"EUR\", \"value\": \"12.50\"}}], \"links\": [{\"rel\": \"self\", \"method\": \"GET\", \"href\": \"/v2/checkout/orders/order_7b38f1bec2aa4859a50d188ec85ee32e\"}]}}",
+      "payload": {
+        "id": "evt_3ac08fe69e5347259cebaf419a54cf7d",
+        "event_type": "SIMULATOR.AUTHORISED",
+        "resource": {
+          "id": "order_7b38f1bec2aa4859a50d188ec85ee32e",
+          "status": "APPROVED",
+          "intent": "CAPTURE",
+          "purchase_units": [
+            {
+              "custom_id": "catalog-v1-p-capture",
+              "amount": {
+                "currency_code": "EUR",
+                "value": "12.50"
+              }
+            }
+          ],
+          "links": [
+            {
+              "rel": "self",
+              "method": "GET",
+              "href": "/v2/checkout/orders/order_7b38f1bec2aa4859a50d188ec85ee32e"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "provider": "paypal",
+      "scenario": "p-capture",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_1063afb3224b4dcba4d856f36a8653b5",
+        "X-Simulator-Timestamp": "1792518247",
+        "X-Simulator-Signature": "48601a76471de7fb85f7664a5caed49f7ca0dd38ce4ec49804906b729b0dfc3f"
+      },
+      "rawBody": "{\"id\": \"evt_1063afb3224b4dcba4d856f36a8653b5\", \"event_type\": \"PAYMENT.CAPTURE.COMPLETED\", \"resource\": {\"id\": \"order_7b38f1bec2aa4859a50d188ec85ee32e\", \"status\": \"COMPLETED\", \"intent\": \"CAPTURE\", \"purchase_units\": [{\"custom_id\": \"catalog-v1-p-capture\", \"amount\": {\"currency_code\": \"EUR\", \"value\": \"12.50\"}, \"payments\": {\"captures\": [{\"id\": \"cap_order_7b38f1bec2aa4859a50d188ec85ee32e\", \"status\": \"COMPLETED\", \"amount\": {\"currency_code\": \"EUR\", \"value\": \"12.50\"}}]}}], \"links\": [{\"rel\": \"self\", \"method\": \"GET\", \"href\": \"/v2/checkout/orders/order_7b38f1bec2aa4859a50d188ec85ee32e\"}]}}",
+      "payload": {
+        "id": "evt_1063afb3224b4dcba4d856f36a8653b5",
+        "event_type": "PAYMENT.CAPTURE.COMPLETED",
+        "resource": {
+          "id": "order_7b38f1bec2aa4859a50d188ec85ee32e",
+          "status": "COMPLETED",
+          "intent": "CAPTURE",
+          "purchase_units": [
+            {
+              "custom_id": "catalog-v1-p-capture",
+              "amount": {
+                "currency_code": "EUR",
+                "value": "12.50"
+              },
+              "payments": {
+                "captures": [
+                  {
+                    "id": "cap_order_7b38f1bec2aa4859a50d188ec85ee32e",
+                    "status": "COMPLETED",
+                    "amount": {
+                      "currency_code": "EUR",
+                      "value": "12.50"
+                    }
+                  }
+                ]
+              }
+            }
+          ],
+          "links": [
+            {
+              "rel": "self",
+              "method": "GET",
+              "href": "/v2/checkout/orders/order_7b38f1bec2aa4859a50d188ec85ee32e"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "provider": "paypal",
+      "scenario": "p-decline",
+      "source": "Persisted local event serialised by WebhookDelivery.payload; not an HTTP receipt",
+      "headers": {
+        "X-Simulator-Event-Id": "evt_69cf0242f1de447bb76b3ea862d5d2e1",
+        "X-Simulator-Timestamp": "1792518247",
+        "X-Simulator-Signature": "2dadf4679a3dc266e93369553733126eac1f87f35697ac2da895767889e5e094"
+      },
+      "rawBody": "{\"id\": \"evt_69cf0242f1de447bb76b3ea862d5d2e1\", \"event_type\": \"SIMULATOR.DECLINED\", \"resource\": {\"id\": \"order_306c1065cc5e4524a0c569082f662bd0\", \"status\": \"APPROVED\", \"intent\": \"CAPTURE\", \"purchase_units\": [{\"custom_id\": \"catalog-v1-p-decline\", \"amount\": {\"currency_code\": \"EUR\", \"value\": \"25.00\"}}], \"links\": [{\"rel\": \"self\", \"method\": \"GET\", \"href\": \"/v2/checkout/orders/order_306c1065cc5e4524a0c569082f662bd0\"}]}}",
+      "payload": {
+        "id": "evt_69cf0242f1de447bb76b3ea862d5d2e1",
+        "event_type": "SIMULATOR.DECLINED",
+        "resource": {
+          "id": "order_306c1065cc5e4524a0c569082f662bd0",
+          "status": "APPROVED",
+          "intent": "CAPTURE",
+          "purchase_units": [
+            {
+              "custom_id": "catalog-v1-p-decline",
+              "amount": {
+                "currency_code": "EUR",
+                "value": "25.00"
+              }
+            }
+          ],
+          "links": [
+            {
+              "rel": "self",
+              "method": "GET",
+              "href": "/v2/checkout/orders/order_306c1065cc5e4524a0c569082f662bd0"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

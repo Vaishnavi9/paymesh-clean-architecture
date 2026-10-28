@@ -1,0 +1,49 @@
+@base = http://127.0.0.1:18101
+@key = local-stripe-key
+@admin = local-admin-key
+
+### Create and authorise 25 EUR, but do not capture
+POST {{base}}/v1/payment_intents
+Authorization: Bearer {{key}}
+Idempotency-Key: stripe-lesson-001
+Content-Type: application/x-www-form-urlencoded
+
+amount=2500&currency=eur&metadata[order_reference]=lesson-001&payment_method=pm_funded&confirm=true&capture_method=manual
+
+> {% client.global.set("stripeId", response.body.id); %}
+
+### Observe requires_capture
+GET {{base}}/v1/payment_intents/{{stripeId}}
+Authorization: Bearer {{key}}
+
+### Capture; rerun with this same key to prove replay
+POST {{base}}/v1/payment_intents/{{stripeId}}/capture
+Authorization: Bearer {{key}}
+Idempotency-Key: stripe-capture-001
+
+### Evidence: one RESERVE and one CAPTURE
+GET {{base}}/__sim/payments/{{stripeId}}/ledger
+X-Simulator-Admin-Key: {{admin}}
+
+### Configure a post-commit response failure for the NEXT payment with this reference
+PUT {{base}}/__sim/scenarios/lost-result-001
+X-Simulator-Admin-Key: {{admin}}
+Content-Type: application/json
+
+{"transientFailures":0,"loseResponse":true,"delayMs":0}
+
+### First call returns 504; rerun IDENTICALLY to recover the saved successful result
+POST {{base}}/v1/payment_intents
+Authorization: Bearer {{key}}
+Idempotency-Key: lost-result-001
+Content-Type: application/x-www-form-urlencoded
+
+amount=2500&currency=eur&metadata[order_reference]=lost-result-001&payment_method=pm_funded&confirm=true
+
+### Business decline: no funds reserved
+POST {{base}}/v1/payment_intents
+Authorization: Bearer {{key}}
+Idempotency-Key: low-funds-001
+Content-Type: application/x-www-form-urlencoded
+
+amount=2500&currency=eur&metadata[order_reference]=low-funds-001&payment_method=pm_low&confirm=true

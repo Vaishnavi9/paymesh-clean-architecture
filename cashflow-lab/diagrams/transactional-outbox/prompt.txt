@@ -1,0 +1,195 @@
+Act as my senior payments engineer and patient Java/Spring mentor. Help me understand the **transactional outbox pattern through PayMesh**, using clear flow diagrams and a concrete payment example.
+
+This is for my own understanding before recording. Explain the mechanism thoroughly, with technically precise language and small steps. Keep narration outside the diagrams. Do not operate OBS or edit code.
+
+Our customer requirement is:
+
+“When a customer submits a €25 payment, PayMesh must reliably accept the request and arrange its processing. If the customer retries after losing the response, we should recognise the original request.”
+
+Use this requirement throughout. Distinguish accepting a payment request, publishing a processing command, and successfully charging the customer.
+
+**1. Begin with the problem the outbox solves**
+
+Draw a simple flow:
+
+Customer → PayMesh → PostgreSQL → SQS.
+
+Explain that saving a payment and sending a message are two separate operations involving two different systems.
+
+Demonstrate both unsafe orders:
+
+- Commit the payment first, then crash before sending the message.
+- Send the message first, then fail to commit the payment.
+
+Show what exists in PostgreSQL and SQS after each failure. Explain why a normal database transaction cannot atomically commit both PostgreSQL and an external broker.
+
+**2. Introduce the outbox using our actual tables**
+
+We have:
+
+- `payment_requests`: the accepted payment request.
+- `outbox_messages`: a durable instruction waiting to be published.
+
+Relevant payment fields include `payment_id`, `merchant_id`, `idempotency_key`, `request_fingerprint`, `amount_minor`, `currency`, `provider` and `status`.
+
+Relevant outbox fields include `message_id`, `payment_id`, `destination`, `message_type`, `payload`, `status`, `publish_attempts`, `available_at` and `published_at`.
+
+Our initial command uses:
+
+- `destination = SQS`
+- `message_type = payment.execute.v1`
+- Payment status `ACCEPTED`
+- Outbox status `PENDING`
+
+Explain why this message is a command to execute a payment.
+
+**3. Draw the main flow with an unmistakable transaction boundary**
+
+Show:
+
+Customer submits request  
+→ validate and check idempotency  
+→ begin PostgreSQL transaction  
+→ insert payment  
+→ insert outbox message  
+→ commit both  
+→ return acceptance.
+
+Enclose the two inserts within one clearly labelled database transaction.
+
+Use a decision diamond for success or failure:
+
+- Successful commit: both rows become durable.
+- Failure before commit: neither new row remains.
+
+Then draw a separate background flow:
+
+Publisher reads eligible committed outbox messages  
+→ sends to SQS  
+→ receives acknowledgement  
+→ updates the outbox row to `PUBLISHED`.
+
+Make it visually clear that publishing happens after the acceptance transaction. The HTTP response does not need to wait for SQS.
+
+Explain that the outbox is an ordinary database table, and the publisher is a separate application responsibility.
+
+**4. Trace one payment completely**
+
+Use an illustrative payment `P-101` and message `M-501`.
+
+Walk through:
+
+1. No records exist.
+2. The transaction creates both records.
+3. Commit makes both visible to other transactions.
+4. PayMesh can return an accepted response.
+5. The publisher sends `M-501`.
+6. SQS acknowledges it.
+7. The publisher records `PUBLISHED`.
+8. A consumer later processes the command.
+
+At each step, show the payment row, outbox row and broker state.
+
+Explain the difference between:
+- Payment identity.
+- Message identity.
+- Client idempotency key.
+- Provider idempotency key.
+
+Use example identifiers only as teaching labels; preserve the real UUID types when discussing our schema.
+
+**5. Explain the failure windows carefully**
+
+Create a compact failure table covering:
+
+- Failure before the database commit.
+- Crash after commit but before publishing.
+- Broker unavailable.
+- Broker accepts the message, but its response is lost.
+- Broker acknowledges the message, then the publisher crashes before marking it published.
+- Consumer receives the same message again.
+- Provider processes the payment, but its HTTP response is lost.
+
+For each, explain:
+- What is known.
+- What remains uncertain.
+- What is safely retried.
+- Which component owns recovery.
+- What prevents a duplicate business effect.
+
+Emphasise that the outbox preserves publication intent. It does not by itself guarantee exactly-once delivery or prevent duplicate charges.
+
+**6. Connect outbox and idempotency without confusing them**
+
+Explain our unique constraint on `(merchant_id, idempotency_key)`:
+
+- Same key and same request fingerprint: return the original acceptance.
+- Same key and different fingerprint: reject the conflicting reuse.
+
+Explain that `outbox_messages.payment_id` references the payment, while the transaction ensures the initial payment and command are created together.
+
+Explain what the unique constraint on `(payment_id, message_type)` protects, and its limitation if we later need multiple legitimate messages of the same type.
+
+Show separately why consumer deduplication and provider idempotency are still necessary.
+
+**7. Map the flow to Spring and JDBC**
+
+Explain how these proposed implementation pieces cooperate:
+
+- `AcceptPaymentService`
+- `PaymentAcceptanceStore.acceptAtomically`
+- `JdbcPaymentAcceptanceStore`
+- `DataSource`
+- `NamedParameterJdbcTemplate`
+- `TransactionTemplate`
+- The JDBC transaction manager
+
+Trace how both inserts participate in the same transaction when they use the same correctly configured data source and transaction-bound connection.
+
+Explain what triggers rollback and when commit occurs. State the assumptions about existing outer transactions.
+
+Keep broker calls and provider HTTP calls outside the acceptance transaction. Explain why moving one insert to an executor thread would break the assumption that both inserts share the same thread-bound transaction.
+
+**8. Add the engineering details after the basic flow is clear**
+
+Explain:
+- Safe claiming of work by multiple publisher instances.
+- Retry backoff, attempt limits and operational recovery.
+- Why unresolved messages need monitoring.
+- Message ordering and its limitations.
+- Consumer deduplication and retention.
+- Why an in-memory “send after commit” callback alone leaves a crash window.
+- Polling publishers versus change-data-capture publishers.
+
+Use executors only where concurrency is needed. Explain bounded concurrency and database/broker capacity rather than adding thread pools automatically.
+
+**9. Connect back to the PayMesh roadmap**
+
+Show the intended continuation:
+
+Acceptance transaction  
+→ outbox publisher  
+→ SQS execution command  
+→ worker  
+→ payment-provider adapter  
+→ provider result  
+→ transaction saving outcome and a new outbox event  
+→ Kafka  
+→ interested consumers.
+
+Explain why SQS and Kafka have separate roles in this proposed design. Do not imply that the outbox requires both technologies.
+
+Clearly label existing, verified behaviour separately from proposed implementation. An allowed database value such as `KAFKA` does not prove a Kafka publisher exists.
+
+**10. Finish with evidence**
+
+Give a short demonstration plan that proves:
+- Failure during the second insert rolls back the first.
+- Concurrent identical submissions produce one accepted payment and one initial command.
+- Broker downtime leaves committed work available for recovery.
+- A crash after publication can cause redelivery.
+- Duplicate processing does not create another provider charge when the required safeguards are implemented.
+
+Start with the unsafe two-write flow and explain it before introducing the corrected flow. Use several small diagrams instead of one crowded diagram. Use labelled arrows and yes/no decisions, with no decorative slides.
+
+Verify technical claims against official Spring, PostgreSQL and AWS documentation. Never present proposed tests as tests already executed.

@@ -1,0 +1,40 @@
+@base = http://127.0.0.1:18102
+@key = local-adyen-key
+@admin = local-admin-key
+
+### Configure two transient processing failures, then normal account rules
+PUT {{base}}/__sim/scenarios/adyen-lesson-001
+X-Simulator-Admin-Key: {{admin}}
+Content-Type: application/json
+
+{"transientFailures":2,"loseResponse":false,"delayMs":1000}
+
+### Accept for background authorisation
+POST {{base}}/v72/payments
+X-API-Key: {{key}}
+Idempotency-Key: adyen-lesson-001
+Content-Type: application/json
+
+{"merchantAccount":"merchant-demo","reference":"adyen-lesson-001","amount":{"value":2500,"currency":"EUR"},"paymentMethod":{"type":"scheme","storedPaymentMethodId":"pm_funded"}}
+
+> {% client.global.set("adyenId", response.body.pspReference); %}
+
+### LOCAL inspection: attempts, nextAttemptAt and eventual AUTHORISED
+GET {{base}}/__sim/payments/{{adyenId}}
+X-Simulator-Admin-Key: {{admin}}
+
+### After AUTHORISED, request the full capture (separate capture reference)
+POST {{base}}/v72/payments/{{adyenId}}/captures
+X-API-Key: {{key}}
+Idempotency-Key: adyen-capture-001
+Content-Type: application/json
+
+{"merchantAccount":"merchant-demo","reference":"adyen-capture-001","amount":{"value":2500,"currency":"EUR"}}
+
+### Inspect the durable outgoing events; no receiver is required for inspection
+GET {{base}}/__sim/payments/{{adyenId}}/webhooks
+X-Simulator-Admin-Key: {{admin}}
+
+### Check one reserve and one capture after the worker completes
+GET {{base}}/__sim/payments/{{adyenId}}/ledger
+X-Simulator-Admin-Key: {{admin}}

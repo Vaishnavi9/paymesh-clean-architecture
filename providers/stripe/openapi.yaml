@@ -1,0 +1,782 @@
+openapi: 3.1.0
+info:
+  title: PayMesh Stripe-inspired LOCAL simulator
+  version: 1.0.0
+  description: Supported local subset, not a drop-in replacement for the commercial
+    provider. Only seeded fake tokens and money. EUR/USD only. Read README for compatibility
+    boundaries. Bearer tokens are fixed LOCAL development keys; no external OAuth
+    service is contacted. All /__sim operations are local extensions requiring the
+    admin key. No idempotency expiry is applied in this lab. Post-commit response
+    loss is an injected HTTP 504.
+servers:
+- url: http://127.0.0.1:18101
+security:
+- ProviderKey: []
+paths:
+  /v1/payment_intents:
+    post:
+      summary: Create an intent; optionally confirm it
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: &id001
+                $ref: '#/components/schemas/PaymentIntent'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '402':
+          description: Business decline
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: &id002
+                    type: object
+                    additionalProperties: true
+                required:
+                - error
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9._:-]+$
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  format: int64
+                  minimum: 1
+                  maximum: 99999999
+                currency:
+                  enum:
+                  - eur
+                  - usd
+                metadata[order_reference]:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                payment_method:
+                  enum:
+                  - pm_funded
+                  - pm_low
+                  - pm_blocked
+                  - pm_usd
+                confirm:
+                  type: boolean
+                  default: false
+                capture_method:
+                  enum:
+                  - automatic
+                  - manual
+                  default: automatic
+              required:
+              - amount
+              - currency
+              - metadata[order_reference]
+  /v1/payment_intents/{id}:
+    get:
+      summary: Retrieve current intent state
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: *id001
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  /v1/payment_intents/{id}/confirm:
+    post:
+      summary: Confirm and reserve funds; automatic capture if selected
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: *id001
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '402':
+          description: Business decline
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: *id002
+                required:
+                - error
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9._:-]+$
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                payment_method: &id003
+                  type: string
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  /v1/payment_intents/{id}/capture:
+    post:
+      summary: Capture the full reserved amount once
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: *id001
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '402':
+          description: Business decline
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error: *id002
+                required:
+                - error
+      parameters:
+      - in: header
+        name: Idempotency-Key
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^[A-Za-z0-9._:-]+$
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  /health:
+    get:
+      summary: Check application and database
+      security: []
+      responses:
+        '200':
+          description: Ready
+          content:
+            application/json:
+              schema: *id002
+        '503':
+          description: Not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: *id003
+                  message: *id003
+                required:
+                - code
+                - message
+  /__sim/accounts:
+    get:
+      summary: Inspect seeded balances (LOCAL)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: *id002
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - SimulatorAdmin: []
+  /__sim/payments/{id}:
+    get:
+      summary: Inspect persisted internal state (LOCAL)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: *id002
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - SimulatorAdmin: []
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  /__sim/payments/{id}/ledger:
+    get:
+      summary: Inspect ledger evidence (LOCAL)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: *id002
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - SimulatorAdmin: []
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  /__sim/payments/{id}/webhooks:
+    get:
+      summary: Inspect webhooks evidence (LOCAL)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: *id002
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - SimulatorAdmin: []
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  /__sim/scenarios/{reference}:
+    put:
+      summary: Configure faults BEFORE creating a payment (LOCAL)
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: *id002
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid local credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Merchant not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: State conflict, key mismatch or concurrent request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Injected post-commit response failure; retry the same key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+      - SimulatorAdmin: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transientFailures:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                loseResponse:
+                  type: boolean
+                delayMs:
+                  type: integer
+                  minimum: 0
+                  maximum: 30000
+    parameters:
+    - name: reference
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 100
+components:
+  securitySchemes:
+    ProviderKey:
+      type: http
+      scheme: bearer
+      description: 'LOCAL key: local-stripe-key'
+    SimulatorAdmin:
+      type: apiKey
+      in: header
+      name: X-Simulator-Admin-Key
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: &id004
+          type: string
+        message: *id004
+      required:
+      - code
+      - message
+    PaymentIntent:
+      type: object
+      properties:
+        id: *id004
+        object:
+          const: payment_intent
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 99999999
+        currency:
+          enum:
+          - eur
+          - usd
+        status:
+          enum:
+          - requires_payment_method
+          - requires_confirmation
+          - requires_capture
+          - processing
+          - succeeded
+        payment_method:
+          type:
+          - string
+          - 'null'
+        capture_method:
+          enum:
+          - automatic
+          - manual
+        amount_received:
+          type: integer
+          format: int64
+        amount_capturable:
+          type: integer
+          format: int64
+        metadata:
+          type: object
+          properties:
+            order_reference: *id004
+        last_payment_error: &id005
+          type: object
+          additionalProperties: true
+      required:
+      - id
+      - status
+      - amount
+      - currency
+    AdyenResult:
+      type: object
+      properties:
+        pspReference: *id004
+        merchantReference: *id004
+        resultCode:
+          enum:
+          - Pending
+          - Authorised
+          - Refused
+        refusalReason: *id004
+      required:
+      - pspReference
+      - resultCode
+    Order:
+      type: object
+      properties:
+        id: *id004
+        status:
+          enum:
+          - CREATED
+          - APPROVED
+          - COMPLETED
+        intent:
+          const: CAPTURE
+        purchase_units:
+          type: array
+          items: *id005
+        links:
+          type: array
+          items: *id005
+      required:
+      - id
+      - status
+      - intent

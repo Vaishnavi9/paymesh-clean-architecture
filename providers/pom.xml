@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<modelVersion>4.0.0</modelVersion>
+<groupId>com.paymesh</groupId><artifactId>provider-simulators</artifactId><version>1.0.0-SNAPSHOT</version>
+<packaging>pom</packaging><name>PayMesh Provider Simulators</name>
+<modules><module>provider-core</module><module>spring-provider</module><module>paypal</module></modules>
+<properties><maven.compiler.release>21</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><spring-boot.version>4.1.1</spring-boot.version><quarkus.version>3.39.2</quarkus.version></properties>
+<build><plugins>
+<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version><configuration><parameters>true</parameters><debug>true</debug></configuration></plugin>
+<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version><configuration><excludes><exclude>**/*IT.java</exclude></excludes></configuration></plugin>
+</plugins></build>
+<profiles><profile><id>integration</id><build><plugins>
+<plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-failsafe-plugin</artifactId><version>3.5.4</version><configuration><classesDirectory>${project.build.outputDirectory}</classesDirectory></configuration><executions><execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution></executions></plugin>
+</plugins></build></profile></profiles>
+</project>

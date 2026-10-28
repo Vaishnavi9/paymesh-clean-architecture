@@ -1,0 +1,5 @@
+# Example AWS shared configuration. This file is not automatically loaded.
+# Use an existing authorised profile/SSO session later; never add access keys here.
+[profile cashflow-learning]
+region = eu-central-1
+output = json

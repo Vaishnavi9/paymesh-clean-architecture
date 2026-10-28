@@ -1,0 +1,6 @@
+/target/
+/.maven-repository/
+/.idea/
+*.iml
+/config/database-local.properties
+/.runtime/

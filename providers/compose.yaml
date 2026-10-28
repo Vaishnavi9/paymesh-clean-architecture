@@ -1,0 +1,14 @@
+name: paymesh-providers
+services:
+  mongo:
+    image: mongo:8.0@sha256:4a4ab5d4834207389e0d7270fac988e21ffedccecba77991a552f755df229907
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports: ["127.0.0.1:27028:27017"]
+    volumes: ["provider-mongo:/data/db"]
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'try { rs.status() } catch (e) { rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongo:27017\"}]}) }; if (!db.hello().isWritablePrimary) quit(1)'"]
+      interval: 2s
+      timeout: 5s
+      retries: 40
+volumes:
+  provider-mongo:

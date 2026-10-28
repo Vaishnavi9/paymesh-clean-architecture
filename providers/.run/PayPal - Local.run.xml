@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="PayPal - Local Quarkus" type="JarApplication" factoryName="JAR Application">
+    <option name="JAR_PATH" value="$PROJECT_DIR$/paypal/target/quarkus-app/quarkus-run.jar"/>
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/paypal"/>
+    <method v="2"/>
+  </configuration>
+</component>

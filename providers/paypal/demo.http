@@ -1,0 +1,46 @@
+@base = http://127.0.0.1:18103
+@key = local-paypal-key
+@admin = local-admin-key
+
+### Create an order; amount is a decimal string
+POST {{base}}/v2/checkout/orders
+Authorization: Bearer {{key}}
+PayPal-Request-Id: paypal-lesson-001
+X-Simulator-Payment-Method: pm_funded
+Content-Type: application/json
+
+{"intent":"CAPTURE","purchase_units":[{"custom_id":"paypal-lesson-001","amount":{"currency_code":"EUR","value":"25.00"}}]}
+
+> {% client.global.set("paypalId", response.body.id); %}
+
+### Try capture before approval: expect 409 and no financial effect
+POST {{base}}/v2/checkout/orders/{{paypalId}}/capture
+Authorization: Bearer {{key}}
+PayPal-Request-Id: paypal-capture-001
+Content-Type: application/json
+
+{}
+
+### LOCAL substitute for buyer approval (not a real PayPal endpoint)
+POST {{base}}/__sim/orders/{{paypalId}}/approve
+X-Simulator-Admin-Key: {{admin}}
+PayPal-Request-Id: paypal-approve-001
+Content-Type: application/json
+
+{}
+
+### Now repeat the capture; expect COMPLETED
+POST {{base}}/v2/checkout/orders/{{paypalId}}/capture
+Authorization: Bearer {{key}}
+PayPal-Request-Id: paypal-capture-001
+Content-Type: application/json
+
+{}
+
+### Observe the current order
+GET {{base}}/v2/checkout/orders/{{paypalId}}
+Authorization: Bearer {{key}}
+
+### Check the financial evidence
+GET {{base}}/__sim/payments/{{paypalId}}/ledger
+X-Simulator-Admin-Key: {{admin}}

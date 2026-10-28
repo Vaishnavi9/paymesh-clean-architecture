@@ -1,0 +1,67 @@
+[
+  {
+    "title": "The missing instruction",
+    "file": "01-database-first.svg",
+    "status": "Unsafe design"
+  },
+  {
+    "title": "Reversing the order also fails",
+    "file": "02-message-first.svg",
+    "status": "Unsafe design"
+  },
+  {
+    "title": "Save the request and its next action",
+    "file": "03-atomic-acceptance.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Deliver committed work later",
+    "file": "04-background-publisher.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Two records, two responsibilities",
+    "file": "05-table-relationships.svg",
+    "status": "Schema inspected; application integration pending"
+  },
+  {
+    "title": "Follow P-101 and M-501",
+    "file": "06-payment-trace.svg",
+    "status": "Illustrative example"
+  },
+  {
+    "title": "Retries and duplicates at different boundaries",
+    "file": "07-idempotency.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Recovery without a false success claim",
+    "file": "08-failure-windows.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Where the transaction comes from",
+    "file": "09-spring-jdbc.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Multiple publishers and bounded work",
+    "file": "10-safe-publishing.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Ordering, retention and relay choices",
+    "file": "11-delivery-guarantees.svg",
+    "status": "Proposed flow"
+  },
+  {
+    "title": "Connect the next chapters",
+    "file": "12-paymesh-continuation.svg",
+    "status": "Future design \u2014 not yet demonstrated"
+  },
+  {
+    "title": "Prove the promises",
+    "file": "13-proof-plan.svg",
+    "status": "Planned tests \u2014 not run for this guide"
+  }
+]
